@@ -1,13 +1,20 @@
+## ⚠️ FORKED
+
+The original repository stopped automatic weekly builds 6 months ago.
+
+In this fork, I keep the automatic weekly builds going, and add weekly pre-release builds.
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/RouHim/beammp-container-image/main/logo.svg" width="250">
+  <img src="https://raw.githubusercontent.com/michaelosbornegit/beammp-container-image/main/logo.svg" width="250">
 </p>
 
 <p align="center">
-    <a href="https://github.com/RouHim/beammp-container-image/actions/workflows/beammp_release.yml"><img src="https://github.com/RouHim/beammp-container-image/actions/workflows/beammp_release.yml/badge.svg?branch=main" alt="Release Pipe"></a>
-    <a href="https://hub.docker.com/r/rouhim/beammp-server"><img src="https://img.shields.io/docker/pulls/rouhim/beammp-server.svg" alt="Docker Hub pulls"></a>
-    <a href="https://hub.docker.com/r/rouhim/beammp-server"><img src="https://img.shields.io/docker/image-size/rouhim/beammp-server" alt="Docker Hub size"></a>
-    <a href="https://github.com/aquasecurity/trivy"><img src="https://img.shields.io/badge/trivy-protected-blue" alt="trivy"></a>
-    <a href="https://hub.docker.com/r/rouhim/beammp-server/tags"><img src="https://img.shields.io/badge/ARCH-amd64_arm64-blueviolet" alt="os-arch"></a>
+    <a href="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_release.yml"><img src="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_release.yml/badge.svg?branch=main" alt="Stable Release Pipe"></a>
+    <a href="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_pre_release.yml"><img src="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_release.yml/badge.svg?branch=main" alt="Pre-release Release Pipe"></a>
+    <a href="https://hub.docker.com/r/resonatortune/beammp-server"><img src="https://img.shields.io/docker/pulls/resonatortune/beammp-server.svg" alt="Docker Hub pulls"></a>
+    <a href="https://hub.docker.com/r/resonatortune/beammp-server"><img src="https://img.shields.io/docker/image-size/resonatortune/beammp-server" alt="Docker Hub size"></a>
+    <!-- <a href="https://github.com/aquasecurity/trivy"><img src="https://img.shields.io/badge/trivy-protected-blue" alt="trivy"></a> -->
+    <a href="https://hub.docker.com/r/resonatortune/beammp-server/tags"><img src="https://img.shields.io/badge/ARCH-amd64_arm64-blueviolet" alt="os-arch"></a>
     <a href="https://buymeacoffee.com/rouhim"><img alt="Donate me" src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee"></a>
 </p>
 
@@ -33,7 +40,7 @@ docker run --name beammp-server \
            -p 30814:30814/tcp -p 30814:30814/udp \
            -e BEAMMP_NAME='My first awesome Server' \
            -e BEAMMP_AUTH_KEY='<insert auth-key>' \
-           rouhim/beammp-server
+           resonatortune/beammp-server
 ```
 
 > If you want to interact with the server console, just add the `-it` flag to the docker run command.
@@ -120,7 +127,7 @@ unzip -l PATH/TO/MAP.zip \
 ### Automatic updates
 
 If you want to update the mods automatically, you can use a little tool I wrote called
-[beammp-server-beiwagen](https://github.com/RouHim/beammp-server-beiwagen)
+[beammp-server-beiwagen](https://github.com/michaelosbornegit/beammp-server-beiwagen)
 which aims to provide an easy way to update the mods in the `client-mods` folder.
 
 ## Server mods
@@ -144,7 +151,7 @@ docker run --name beammp-server \
            -e BEAMMP_NAME='My first awesome Server' \
            -e BEAMMP_AUTH_KEY='<insert auth-key>' \
            -v ./ServerConfig.toml:/beammp/ServerConfig.toml \
-           rouhim/beammp-server
+           resonatortune/beammp-server
 ```
 
 For docker compose, just add the following line to the `volumes` section:
@@ -166,5 +173,5 @@ volumes:
 - Official server maintenance guide: https://wiki.beammp.com/en/home/server-maintenance
 - Official server installation guide: https://wiki.beammp.com/en/home/server-installation
 - Inspired by: https://github.com/mastamic-ian/BeamMP_docker
-- Built from: https://github.com/RouHim/beammp-container-image
-- Built to: https://hub.docker.com/r/rouhim/beammp-server
+- Built from: https://github.com/michaelosbornegit/beammp-container-image
+- Built to: https://hub.docker.com/r/resonatortune/beammp-server

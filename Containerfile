@@ -7,19 +7,24 @@ FROM docker.io/ubuntu:22.04 AS builder
 RUN mkdir /work
 WORKDIR /work
 
-# Install curl for downloading the latest release
-RUN apt update && apt upgrade -y && apt install -y curl
+# Install curl and jq for downloading and parsing release data
+RUN apt update && apt upgrade -y && apt install -y curl jq
 
-# Detect the latest release version (expect pre-releases)
-# AND Download "BeamMP-Server.$CURRENT_OS.$ARCH"
-# Where arch is either x86_64 or arm64
-# And download to current dir as "BeamMP-Server"
-RUN export LATEST_VERSION=$(curl -s https://api.github.com/repos/BeamMP/BeamMP-Server/releases/latest | grep "tag_name" | cut -d '"' -f 4) && \
-    export CURRENT_ARCH=$(uname -m | sed s/aarch64/arm64/g) && \
-    export CURRENT_OS="ubuntu.22.04" && \
-    export DOWNLOAD_URL="https://github.com/BeamMP/BeamMP-Server/releases/download/$LATEST_VERSION/BeamMP-Server.$CURRENT_OS.$CURRENT_ARCH" && \
+# Accept build argument to determine if we use pre-releases
+ARG PRERELEASE=false
+
+# Get the appropriate release tag based on the PRERELEASE arg
+RUN RELEASES_JSON=$(curl -s https://api.github.com/repos/BeamMP/BeamMP-Server/releases) && \
+    if [ "$PRERELEASE" = "true" ]; then \
+        LATEST_VERSION=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name'); \
+    else \
+        LATEST_VERSION=$(echo "$RELEASES_JSON" | jq -r '[.[] | select(.prerelease == false)][0].tag_name'); \
+    fi && \
+    CURRENT_ARCH=$(uname -m | sed s/aarch64/arm64/g) && \
+    CURRENT_OS="ubuntu.22.04" && \
+    DOWNLOAD_URL="https://github.com/BeamMP/BeamMP-Server/releases/download/$LATEST_VERSION/BeamMP-Server.$CURRENT_OS.$CURRENT_ARCH" && \
     echo "Downloading $DOWNLOAD_URL" && \
-    curl -L -o BeamMP-Server $DOWNLOAD_URL && \
+    curl -L -o BeamMP-Server "$DOWNLOAD_URL" && \
     chmod +x BeamMP-Server
 
 # Ensure the executable is present
@@ -29,19 +34,20 @@ RUN ls -lsh /work/BeamMP-Server
 #    Run Image     #
 ####################
 FROM docker.io/ubuntu:22.04
-LABEL maintainer="Rouven Himmelstein rouven@himmelstein.info,Michael Osborne resonatortune@gmail.com"
 
-## Game server parameter and their defaults
-ENV BEAMMP_PORT "30814"
-ENV BEAMMP_NAME "BeamMP New Server"
-ENV BEAMMP_MAP "/levels/gridmap_v2/info.json"
-ENV BEAMMP_DESCRIPTION "BeamMP Default Description"
-ENV BEAMMP_MAX_CARS "1"
-ENV BEAMMP_MAX_PLAYERS "10"
-ENV BEAMMP_PRIVATE "true"
-ENV BEAMMP_DEBUG "false"
-ENV BEAMMP_AUTH_KEY ""
-ENV TZ "UTC"
+LABEL maintainer="Rouven Himmelstein <rouven@himmelstein.info>, Michael Osborne <resonatortune@gmail.com>"
+
+# Game server parameter and their defaults
+ENV BEAMMP_PORT "30814" \
+    BEAMMP_NAME "BeamMP New Server" \
+    BEAMMP_MAP "/levels/gridmap_v2/info.json" \
+    BEAMMP_DESCRIPTION "BeamMP Default Description" \
+    BEAMMP_MAX_CARS "1" \
+    BEAMMP_MAX_PLAYERS "10" \
+    BEAMMP_PRIVATE "true" \
+    BEAMMP_DEBUG "false" \
+    BEAMMP_AUTH_KEY "" \
+    TZ "UTC"
 
 # Install game server required packages
 RUN apt update &&  \

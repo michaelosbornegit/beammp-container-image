@@ -1,23 +1,20 @@
-# This builds the latest stable version of beammp
-name: Stable Release Pipe
+# This builds the latest stable and prerelease versions of beammp
+name: Release Pipe
 on:
-  push:
-  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
-  pull_request:
-    types:
-      - opened
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * 0" # weekly at sunday night
 
 env:
   CONTAINER_FILE: ./Containerfile
   IMAGE_NAME: resonatortune/beammp-server
-  IMAGE_TAG: latest
 
 jobs:
-
-  build-test-push-image:
+  build-stable:
+    name: Build Stable Release
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,65 +28,88 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build container image
+      - name: Build container image (stable)
         uses: docker/build-push-action@v6
         with:
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: ${{ env.IMAGE_NAME }}:temp-stable
           platforms: linux/amd64
           context: .
-          file: ./Containerfile
+          file: ${{ env.CONTAINER_FILE }}
           load: true
           push: false
+          build-args: |
+            PRERELEASE=false
 
-      # - name: Run Trivy vulnerability scanner
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     scan-type: image
-      #     image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-      #     format: 'table'
-      #     exit-code: '1'
-      #     ignore-unfixed: true
-      #     severity: 'CRITICAL,HIGH'
-
-      - name: Test the built image
-        env:
-          BEAMMP_AUTH_KEY: ${{ secrets.BEAMMP_AUTH_KEY }}
+      - name: Extract version from stable image
+        id: extract_stable
         run: |
-          mkdir client-mods server-mods
-          chmod 777 client-mods server-mods
-          cp .env.example .env 
-          timeout 1m bash test-image.sh
+          VERSION=$(docker run --rm ${{ env.IMAGE_NAME }}:temp-stable cat /beammp/version.txt)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Build and push multiplatform container image
-        if: github.ref == 'refs/heads/main'
+      - name: Build and push stable multiplatform image
         uses: docker/build-push-action@v6
         with:
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.extract_stable.outputs.version }}
+            ${{ env.IMAGE_NAME }}:latest
           platforms: linux/amd64,linux/arm64
           context: .
-          file: ./Containerfile
-          load: false
+          file: ${{ env.CONTAINER_FILE }}
           push: true
+          build-args: |
+            PRERELEASE=false
+          labels: |
+            org.opencontainers.image.version=${{ steps.extract_stable.outputs.version }}
+            org.opencontainers.image.prerelease=false
 
-      - name: Update docker hub description
-        if: github.ref == 'refs/heads/main'
-        uses: peter-evans/dockerhub-description@v4
+  build-prerelease:
+    name: Build Prerelease Version
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: prerelease
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: ${{ env.IMAGE_NAME }}
 
-      # - name: Run Trivy vulnerability scanner
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     scan-type: image
-      #     image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-      #     exit-code: '0'
-      #     ignore-unfixed: true
-      #     severity: 'CRITICAL,HIGH'
-      #     format: 'sarif'
-      #     output: 'trivy-results.sarif'
-      # - name: Upload Trivy scan results to GitHub Security tab
-      #   uses: github/codeql-action/upload-sarif@v3
-      #   with:
-      #     sarif_file: 'trivy-results.sarif'
+      - name: Build container image (prerelease)
+        uses: docker/build-push-action@v6
+        with:
+          tags: ${{ env.IMAGE_NAME }}:temp-prerelease
+          platforms: linux/amd64
+          context: .
+          file: ${{ env.CONTAINER_FILE }}
+          load: true
+          push: false
+          build-args: |
+            PRERELEASE=true
+
+      - name: Extract version from prerelease image
+        id: extract_prerelease
+        run: |
+          VERSION=$(docker run --rm ${{ env.IMAGE_NAME }}:temp-prerelease cat /beammp/version.txt)
+          echo "version=${VERSION}-prerelease" >> $GITHUB_OUTPUT
+
+      - name: Build and push prerelease multiplatform image
+        uses: docker/build-push-action@v6
+        with:
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.extract_prerelease.outputs.version }}
+            ${{ env.IMAGE_NAME }}:prerelease
+          platforms: linux/amd64,linux/arm64
+          context: .
+          file: ${{ env.CONTAINER_FILE }}
+          push: true
+          build-args: |
+            PRERELEASE=true
+          labels: |
+            org.opencontainers.image.version=${{ steps.extract_prerelease.outputs.version }}
+            org.opencontainers.image.prerelease=true
