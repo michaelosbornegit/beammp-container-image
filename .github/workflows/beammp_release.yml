@@ -1,26 +1,32 @@
-# This builds the latest stable and prerelease versions of beammp
-name: Release Pipe
+name: BeamMP Weekly Build
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 0" # weekly at sunday night
+    - cron: "0 0 * * 0"  # Every Sunday at midnight UTC
 
 env:
-  IMAGE_NAME: resonatortune/beammp-server
+  IMAGE_NAME: yourdockerhubuser/beammp-server
   CONTAINER_FILE: ./Containerfile
 
 jobs:
   build-stable:
     name: Build Stable Release
     runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG: latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Extract stable version.txt from builder
+        id: extract_stable
+        run: |
+          docker buildx build \
+            --target=version-export \
+            --build-arg PRERELEASE=false \
+            --file ${{ env.CONTAINER_FILE }} \
+            --output type=local,dest=build-meta-stable \
+            .
+          VERSION=$(cat build-meta-stable/version.txt)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -28,25 +34,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build container image (stable)
-        uses: docker/build-push-action@v6
-        with:
-          tags: ${{ env.IMAGE_NAME }}:temp-stable
-          platforms: linux/amd64
-          context: .
-          file: ${{ env.CONTAINER_FILE }}
-          outputs: type=docker
-          push: false
-          build-args: |
-            PRERELEASE=false
-
-      - name: Extract version from stable image
-        id: extract_stable
-        run: |
-          VERSION=$(docker run --rm ${{ env.IMAGE_NAME }}:temp-stable cat /beammp/version.txt)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Build and push stable multiplatform image
+      - name: Build and push stable image
         uses: docker/build-push-action@v6
         with:
           tags: |
@@ -65,14 +53,20 @@ jobs:
   build-prerelease:
     name: Build Prerelease Version
     runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG: prerelease
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Extract prerelease version.txt from builder
+        id: extract_prerelease
+        run: |
+          docker buildx build \
+            --target=version-export \
+            --build-arg PRERELEASE=true \
+            --file ${{ env.CONTAINER_FILE }} \
+            --output type=local,dest=build-meta-prerelease \
+            .
+          VERSION=$(cat build-meta-prerelease/version.txt)
+          echo "version=${VERSION}-prerelease" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -80,25 +74,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build container image (prerelease)
-        uses: docker/build-push-action@v6
-        with:
-          tags: ${{ env.IMAGE_NAME }}:temp-prerelease
-          platforms: linux/amd64
-          context: .
-          file: ${{ env.CONTAINER_FILE }}
-          outputs: type=docker
-          push: false
-          build-args: |
-            PRERELEASE=true
-
-      - name: Extract version from prerelease image
-        id: extract_prerelease
-        run: |
-          VERSION=$(docker run --rm ${{ env.IMAGE_NAME }}:temp-prerelease cat /beammp/version.txt)
-          echo "version=${VERSION}-prerelease" >> $GITHUB_OUTPUT
-
-      - name: Build and push prerelease multiplatform image
+      - name: Build and push prerelease image
         uses: docker/build-push-action@v6
         with:
           tags: |

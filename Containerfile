@@ -32,6 +32,12 @@ RUN PRERELEASE=${PRERELEASE:-false} && \
 RUN ls -lsh /work/BeamMP-Server
 
 ####################
+# Export-only Target for version.txt
+####################
+FROM scratch AS version-export
+COPY --from=builder /work/version.txt /version.txt
+
+####################
 #    Run Image     #
 ####################
 FROM docker.io/ubuntu:22.04
