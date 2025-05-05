@@ -13,13 +13,14 @@ RUN apt update && apt upgrade -y && apt install -y curl jq
 # Accept build argument to determine if we use pre-releases
 ARG PRERELEASE=false
 
-# Get the appropriate release tag based on the PRERELEASE arg
-RUN RELEASES_JSON=$(curl -s https://api.github.com/repos/BeamMP/BeamMP-Server/releases) && \
+RUN PRERELEASE=${PRERELEASE:-false} && \
+    FILTERED_JSON=$(curl -s https://api.github.com/repos/BeamMP/BeamMP-Server/releases | jq '[.[] | {tag_name, prerelease}]') && \
     if [ "$PRERELEASE" = "true" ]; then \
-        LATEST_VERSION=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name'); \
+        LATEST_VERSION=$(echo "$FILTERED_JSON" | jq -r '.[0].tag_name'); \
     else \
-        LATEST_VERSION=$(echo "$RELEASES_JSON" | jq -r '[.[] | select(.prerelease == false)][0].tag_name'); \
+        LATEST_VERSION=$(echo "$FILTERED_JSON" | jq -r '[.[] | select(.prerelease == false)][0].tag_name'); \
     fi && \
+    echo "$LATEST_VERSION" > version.txt && \
     CURRENT_ARCH=$(uname -m | sed s/aarch64/arm64/g) && \
     CURRENT_OS="ubuntu.22.04" && \
     DOWNLOAD_URL="https://github.com/BeamMP/BeamMP-Server/releases/download/$LATEST_VERSION/BeamMP-Server.$CURRENT_OS.$CURRENT_ARCH" && \
