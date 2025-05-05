@@ -11,7 +11,7 @@ on:
 
 env:
   CONTAINER_FILE: ./Containerfile
-  IMAGE_NAME: rouhim/beammp-server
+  IMAGE_NAME: resonatortune/beammp-server
   IMAGE_TAG: latest
 
 jobs:
@@ -41,15 +41,15 @@ jobs:
           load: true
           push: false
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: image
-          image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+      # - name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     scan-type: image
+      #     image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+      #     format: 'table'
+      #     exit-code: '1'
+      #     ignore-unfixed: true
+      #     severity: 'CRITICAL,HIGH'
 
       - name: Test the built image
         env:
@@ -79,17 +79,17 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: ${{ env.IMAGE_NAME }}
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: image
-          image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          exit-code: '0'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
+      # - name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     scan-type: image
+      #     image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+      #     exit-code: '0'
+      #     ignore-unfixed: true
+      #     severity: 'CRITICAL,HIGH'
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'

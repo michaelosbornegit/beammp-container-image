@@ -29,7 +29,7 @@ RUN ls -lsh /work/BeamMP-Server
 #    Run Image     #
 ####################
 FROM docker.io/ubuntu:22.04
-LABEL maintainer="Rouven Himmelstein rouven@himmelstein.info"
+LABEL maintainer="Rouven Himmelstein rouven@himmelstein.info,Michael Osborne resonatortune@gmail.com"
 
 ## Game server parameter and their defaults
 ENV BEAMMP_PORT "30814"
