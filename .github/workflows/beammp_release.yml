@@ -16,10 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Buildx with multi-platform support
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
       - name: Extract stable version.txt from builder
         id: extract_stable
         run: |
           docker buildx build \
+            --builder default \
             --target=version-export \
             --build-arg PRERELEASE=false \
             --file ${{ env.CONTAINER_FILE }} \
@@ -37,6 +43,7 @@ jobs:
       - name: Build and push stable image
         uses: docker/build-push-action@v6
         with:
+          builder: default
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.extract_stable.outputs.version }}
             ${{ env.IMAGE_NAME }}:latest
@@ -56,10 +63,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Buildx with multi-platform support
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
       - name: Extract prerelease version.txt from builder
         id: extract_prerelease
         run: |
           docker buildx build \
+            --builder default \
             --target=version-export \
             --build-arg PRERELEASE=true \
             --file ${{ env.CONTAINER_FILE }} \
@@ -77,6 +90,7 @@ jobs:
       - name: Build and push prerelease image
         uses: docker/build-push-action@v6
         with:
+          builder: default
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.extract_prerelease.outputs.version }}
             ${{ env.IMAGE_NAME }}:prerelease
