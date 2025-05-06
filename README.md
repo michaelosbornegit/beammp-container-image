@@ -1,6 +1,6 @@
 ## ⚠️ FORKED
 
-RouHim's work is amazing and has been reliable for me for years providing updates to keep my BeamMP servers running.
+RouHim's work is amazing and has been reliable for me for years keeping my BeamMP servers running.
 
 The original repository stopped automatic weekly builds 3 months ago due to inactivity and the last few builds failed. 
 
