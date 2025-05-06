@@ -1,4 +1,4 @@
-name: BeamMP Weekly Release and Prerelease Build
+name: BeamMP Weekly Build
 
 on:
   workflow_dispatch:
@@ -35,7 +35,9 @@ jobs:
 
           if [[ -n "$VERSION_INPUT" ]]; then
             VERSION="$VERSION_INPUT"
+            MANUAL=true
           else
+            MANUAL=false
             docker buildx build \
               --target=version-export \
               --build-arg PRERELEASE=$PRERELEASE \
@@ -47,6 +49,7 @@ jobs:
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
+          echo "manual=$MANUAL" >> $GITHUB_OUTPUT
 
   build-dispatch:
     if: github.event_name == 'workflow_dispatch'
@@ -75,7 +78,11 @@ jobs:
             VERSION=${{ needs.determine-version.outputs.version }}
           tags: |
             ${{ env.IMAGE_NAME }}:${{ needs.determine-version.outputs.version }}
-            ${{ env.IMAGE_NAME }}${{ needs.determine-version.outputs.prerelease == 'true' && ':prerelease' || ':latest' }}
+            ${{ github.event.inputs.version == '' && (
+              needs.determine-version.outputs.prerelease == 'true' &&
+              format('{0}:prerelease', env.IMAGE_NAME) ||
+              format('{0}:latest', env.IMAGE_NAME)
+            ) || '' }}
           labels: |
             org.opencontainers.image.version=${{ needs.determine-version.outputs.version }}
             org.opencontainers.image.prerelease=${{ needs.determine-version.outputs.prerelease }}
