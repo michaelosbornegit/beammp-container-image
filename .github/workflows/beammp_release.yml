@@ -16,9 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Buildx with multi-platform support
-        uses: docker/setup-buildx-action@v3
-
       - name: Extract stable version.txt from builder
         id: extract_stable
         run: |
@@ -44,7 +41,7 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.extract_stable.outputs.version }}
             ${{ env.IMAGE_NAME }}:latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           context: .
           file: ${{ env.CONTAINER_FILE }}
           push: true
@@ -59,9 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Buildx with multi-platform support
-        uses: docker/setup-buildx-action@v3
 
       - name: Extract prerelease version.txt from builder
         id: extract_prerelease
@@ -87,7 +81,7 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.extract_prerelease.outputs.version }}
             ${{ env.IMAGE_NAME }}:prerelease
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           context: .
           file: ${{ env.CONTAINER_FILE }}
           push: true
