@@ -1,10 +1,10 @@
-## ⚠️ FORKED
+## ⚠️ FORKED... WHY?
 
 RouHim's work is amazing and has been reliable for me for years keeping my BeamMP servers running.
 
 The original repository stopped automatic weekly builds 3 months ago due to inactivity and the last few builds failed. 
 
-I took the opportunity to fork it to **keep the weekly builds going**, add support for **pre-release builds**, and **more robust image tagging**.
+I took the opportunity to fork it to **keep the weekly builds going**, add support for **pre-release builds** to fix lua issues introduced by BeamMP update 0.35 and other situations in the future, and added **more robust image tagging**.
 
 Latest pre-release: `resonatortune/beammp-server:prerelease`
 Latest stable: `resonatortune/beammp-server:latest`
