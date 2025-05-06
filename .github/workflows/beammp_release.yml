@@ -23,7 +23,6 @@ jobs:
         id: extract_stable
         run: |
           docker buildx build \
-            --builder default \
             --target=version-export \
             --build-arg PRERELEASE=false \
             --file ${{ env.CONTAINER_FILE }} \
@@ -68,7 +67,6 @@ jobs:
         id: extract_prerelease
         run: |
           docker buildx build \
-            --builder default \
             --target=version-export \
             --build-arg PRERELEASE=true \
             --file ${{ env.CONTAINER_FILE }} \
