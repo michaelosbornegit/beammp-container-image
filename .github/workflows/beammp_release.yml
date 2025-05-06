@@ -34,7 +34,12 @@ jobs:
           VERSION_INPUT="${{ github.event.inputs.version }}"
 
           if [[ -n "$VERSION_INPUT" ]]; then
-            VERSION="$VERSION_INPUT"
+            # Ensure version starts with 'v'
+            if [[ "$VERSION_INPUT" != v* ]]; then
+              VERSION="v$VERSION_INPUT"
+            else
+              VERSION="$VERSION_INPUT"
+            fi
             MANUAL=true
           else
             MANUAL=false
@@ -50,6 +55,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
           echo "manual=$MANUAL" >> $GITHUB_OUTPUT
+
 
   build-dispatch:
     if: github.event_name == 'workflow_dispatch'
