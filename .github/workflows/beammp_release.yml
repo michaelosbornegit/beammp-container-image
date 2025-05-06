@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.setver.outputs.version }}
+      image_tag: ${{ steps.setver.outputs.image_tag }}
       prerelease: ${{ steps.setver.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v4
@@ -34,36 +35,30 @@ jobs:
           VERSION_INPUT="${{ github.event.inputs.version }}"
 
           if [[ -n "$VERSION_INPUT" ]]; then
-            # Prepend 'v' if not present
             if [[ "$VERSION_INPUT" != v* ]]; then
               BASE_VERSION="v$VERSION_INPUT"
             else
               BASE_VERSION="$VERSION_INPUT"
             fi
-            MANUAL=true
           else
-            MANUAL=false
-            BASE_VERSION=$(docker buildx build \
+            docker buildx build \
               --target=version-export \
               --build-arg PRERELEASE=$PRERELEASE \
               --file ${{ env.CONTAINER_FILE }} \
               --output type=local,dest=build-meta \
-              . && cat build-meta/version.txt)
+              .
+            BASE_VERSION=$(cat build-meta/version.txt)
           fi
 
-          # Compute Docker tag version
           if [[ "$PRERELEASE" == "true" ]]; then
-            IMAGE_VERSION="${BASE_VERSION}-prerelease"
+            IMAGE_TAG="${BASE_VERSION}-prerelease"
           else
-            IMAGE_VERSION="$BASE_VERSION"
+            IMAGE_TAG="$BASE_VERSION"
           fi
 
           echo "version=$BASE_VERSION" >> $GITHUB_OUTPUT
-          echo "image_tag=$IMAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
-          echo "manual=$MANUAL" >> $GITHUB_OUTPUT
-
-
 
   build-dispatch:
     if: github.event_name == 'workflow_dispatch'
@@ -92,11 +87,6 @@ jobs:
             VERSION=${{ needs.determine-version.outputs.version }}
           tags: |
             ${{ env.IMAGE_NAME }}:${{ needs.determine-version.outputs.image_tag }}
-            ${{ github.event.inputs.version == '' && (
-              needs.determine-version.outputs.prerelease == 'true' &&
-              format('{0}:prerelease', env.IMAGE_NAME) ||
-              format('{0}:latest', env.IMAGE_NAME)
-            ) || '' }}
           labels: |
             org.opencontainers.image.version=${{ needs.determine-version.outputs.version }}
             org.opencontainers.image.prerelease=${{ needs.determine-version.outputs.prerelease }}
@@ -115,6 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.setver.outputs.version }}
+      image_tag: ${{ steps.setver.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -129,12 +120,14 @@ jobs:
             .
           VERSION=$(cat build-meta/version.txt)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "image_tag=$VERSION" >> $GITHUB_OUTPUT
 
   determine-cron-prerelease:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.setver.outputs.version }}
+      image_tag: ${{ steps.setver.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -149,6 +142,7 @@ jobs:
             .
           VERSION=$(cat build-meta/version.txt)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "image_tag=${VERSION}-prerelease" >> $GITHUB_OUTPUT
 
   build-stable-cron:
     if: github.event_name == 'schedule'
@@ -176,7 +170,7 @@ jobs:
             PRERELEASE=false
             VERSION=${{ needs.determine-cron-stable.outputs.version }}
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ needs.determine-cron-stable.outputs.version }}
+            ${{ env.IMAGE_NAME }}:${{ needs.determine-cron-stable.outputs.image_tag }}
             ${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.version=${{ needs.determine-cron-stable.outputs.version }}
@@ -208,7 +202,7 @@ jobs:
             PRERELEASE=true
             VERSION=${{ needs.determine-cron-prerelease.outputs.version }}
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ needs.determine-cron-prerelease.outputs.version }}
+            ${{ env.IMAGE_NAME }}:${{ needs.determine-cron-prerelease.outputs.image_tag }}
             ${{ env.IMAGE_NAME }}:prerelease
           labels: |
             org.opencontainers.image.version=${{ needs.determine-cron-prerelease.outputs.version }}
