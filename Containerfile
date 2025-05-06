@@ -62,8 +62,8 @@ ENV BEAMMP_PORT="30814" \
     BEAMMP_AUTH_KEY="" \
     TZ="UTC"
 
-RUN apt update && apt upgrade -y && \
-    apt install -y liblua5.3-0 tzdata && \
+    RUN apt update && apt upgrade -y && \
+    apt install -y liblua5.3-0 tzdata ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/
 
 # Prepare server directories
