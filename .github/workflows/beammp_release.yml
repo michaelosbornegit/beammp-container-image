@@ -34,27 +34,35 @@ jobs:
           VERSION_INPUT="${{ github.event.inputs.version }}"
 
           if [[ -n "$VERSION_INPUT" ]]; then
-            # Ensure version starts with 'v'
+            # Prepend 'v' if not present
             if [[ "$VERSION_INPUT" != v* ]]; then
-              VERSION="v$VERSION_INPUT"
+              BASE_VERSION="v$VERSION_INPUT"
             else
-              VERSION="$VERSION_INPUT"
+              BASE_VERSION="$VERSION_INPUT"
             fi
             MANUAL=true
           else
             MANUAL=false
-            docker buildx build \
+            BASE_VERSION=$(docker buildx build \
               --target=version-export \
               --build-arg PRERELEASE=$PRERELEASE \
               --file ${{ env.CONTAINER_FILE }} \
               --output type=local,dest=build-meta \
-              .
-            VERSION=$(cat build-meta/version.txt)
+              . && cat build-meta/version.txt)
           fi
 
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          # Compute Docker tag version
+          if [[ "$PRERELEASE" == "true" ]]; then
+            IMAGE_VERSION="${BASE_VERSION}-prerelease"
+          else
+            IMAGE_VERSION="$BASE_VERSION"
+          fi
+
+          echo "version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "image_tag=$IMAGE_VERSION" >> $GITHUB_OUTPUT
           echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
           echo "manual=$MANUAL" >> $GITHUB_OUTPUT
+
 
 
   build-dispatch:
@@ -83,7 +91,7 @@ jobs:
             PRERELEASE=${{ needs.determine-version.outputs.prerelease }}
             VERSION=${{ needs.determine-version.outputs.version }}
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ needs.determine-version.outputs.version }}
+            ${{ env.IMAGE_NAME }}:${{ needs.determine-version.outputs.image_tag }}
             ${{ github.event.inputs.version == '' && (
               needs.determine-version.outputs.prerelease == 'true' &&
               format('{0}:prerelease', env.IMAGE_NAME) ||
