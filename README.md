@@ -7,8 +7,11 @@ The original repository stopped automatic weekly builds 3 months ago due to inac
 I took the opportunity to fork it to **keep the weekly builds going**, add support for **pre-release builds** to fix lua issues introduced by BeamMP update 0.35 and other situations in the future, and added **more robust image tagging**.
 
 Latest pre-release: `resonatortune/beammp-server:prerelease`
+
 Latest stable: `resonatortune/beammp-server:latest`
+
 I also create tags to pin a version, at the time of making this: `resonatortune/beammp-server:v3.8.3-prerelease` and `resonatortune/beammp-server:v3.4.1`
+
 To view all tags: https://hub.docker.com/repository/docker/resonatortune/beammp-server/tags
 
 existing readme with some tweaks to point to my image links below
