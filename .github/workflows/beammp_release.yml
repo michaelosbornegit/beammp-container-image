@@ -6,7 +6,7 @@ on:
     - cron: "0 0 * * 0"  # Every Sunday at midnight UTC
 
 env:
-  IMAGE_NAME: yourdockerhubuser/beammp-server
+  IMAGE_NAME: resonatortune/beammp-server
   CONTAINER_FILE: ./Containerfile
 
 jobs:
