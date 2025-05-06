@@ -1,8 +1,19 @@
 ## ⚠️ FORKED
 
-The original repository stopped automatic weekly builds 6 months ago.
+RouHim's work is amazing and has been reliable for me for years providing updates to keep my BeamMP servers running.
 
-In this fork, I keep the automatic weekly builds going, and add weekly pre-release builds.
+The original repository stopped automatic weekly builds 3 months ago due to inactivity and the last few builds failed. 
+
+I took the opportunity to fork it to **keep the weekly builds going**, add support for **pre-release builds**, and **more robust image tagging**.
+
+Latest pre-release: `resonatortune/beammp-server:prerelease`
+Latest stable: `resonatortune/beammp-server:latest`
+I also create tags to pin a version, at the time of making this: `resonatortune/beammp-server:v3.8.3-prerelease` and `resonatortune/beammp-server:v3.4.1`
+To view all tags: https://hub.docker.com/repository/docker/resonatortune/beammp-server/tags
+
+existing readme with some tweaks to point to my image links below
+
+---
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/michaelosbornegit/beammp-container-image/main/logo.svg" width="250">
@@ -10,12 +21,11 @@ In this fork, I keep the automatic weekly builds going, and add weekly pre-relea
 
 <p align="center">
     <a href="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_release.yml"><img src="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_release.yml/badge.svg?branch=main" alt="Stable Release Pipe"></a>
-    <a href="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_pre_release.yml"><img src="https://github.com/michaelosbornegit/beammp-container-image/actions/workflows/beammp_release.yml/badge.svg?branch=main" alt="Pre-release Release Pipe"></a>
     <a href="https://hub.docker.com/r/resonatortune/beammp-server"><img src="https://img.shields.io/docker/pulls/resonatortune/beammp-server.svg" alt="Docker Hub pulls"></a>
     <a href="https://hub.docker.com/r/resonatortune/beammp-server"><img src="https://img.shields.io/docker/image-size/resonatortune/beammp-server" alt="Docker Hub size"></a>
     <!-- <a href="https://github.com/aquasecurity/trivy"><img src="https://img.shields.io/badge/trivy-protected-blue" alt="trivy"></a> -->
     <a href="https://hub.docker.com/r/resonatortune/beammp-server/tags"><img src="https://img.shields.io/badge/ARCH-amd64_arm64-blueviolet" alt="os-arch"></a>
-    <a href="https://buymeacoffee.com/rouhim"><img alt="Donate me" src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee"></a>
+    <!-- <a href="https://buymeacoffee.com/rouhim"><img alt="Donate me" src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee"></a> -->
 </p>
 
 <p align="center">
